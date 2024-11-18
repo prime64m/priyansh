@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alok's Clock</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .clock-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .clock {
+            font-size: 2em;
+            font-weight: bold;
+            color: #444;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 5px 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        input {
+            padding: 5px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Alok's Clock</h1>
+        <div class="clock-container">
+            <div>
+                <h2>Current Time</h2>
+                <div id="current-time" class="clock"></div>
+            </div>
+            <div>
+                <h2>Stopwatch</h2>
+                <div id="stopwatch" class="clock">00:00:00</div>
+                <div class="controls">
+                    <button id="start-stop-stopwatch">Start</button>
+                    <button id="reset-stopwatch">Reset</button>
+                </div>
+            </div>
+        </div>
+        <div class="clock-container">
+            <div>
+                <h2>Timer</h2>
+                <div id="timer" class="clock">00:00:00</div>
+                <div class="controls">
+                    <input type="number" id="timer-input" placeholder="Enter seconds" min="1">
+                    <button id="start-timer">Start</button>
+                    <button id="reset-timer">Reset</button>
+                </div>
+            </div>
+            <div>
+                <h2>Alarm</h2>
+                <div id="alarm" class="clock">Not set</div>
+                <div class="controls">
+                    <input type="time" id="alarm-input">
+                    <button id="set-alarm">Set Alarm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current Time
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        // Stopwatch
+        let stopwatchInterval;
+        let stopwatchTime = 0;
+        const stopwatchDisplay = document.getElementById('stopwatch');
+        const startStopStopwatch = document.getElementById('start-stop-stopwatch');
+        const resetStopwatch = document.getElementById('reset-stopwatch');
+
+        function updateStopwatch() {
+            stopwatchTime++;
+            const hours = Math.floor(stopwatchTime / 3600);
+            const minutes = Math.floor((stopwatchTime % 3600) / 60);
+            const seconds = stopwatchTime % 60;
+            stopwatchDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        startStopStopwatch.addEventListener('click', () => {
+            if (stopwatchInterval) {
+                clearInterval(stopwatchInterval);
+                stopwatchInterval = null;
+                startStopStopwatch.textContent = 'Start';
+            } else {
+                stopwatchInterval = setInterval(updateStopwatch, 1000);
+                startStopStopwatch.textContent = 'Stop';
+            }
+        });
+
+        resetStopwatch.addEventListener('click', () => {
+            clearInterval(stopwatchInterval);
+            stopwatchInterval = null;
+            stopwatchTime = 0;
+            stopwatchDisplay.textContent = '00:00:00';
+            startStopStopwatch.textContent = 'Start';
+        });
+
+        // Timer
+        let timerInterval;
+        let timerTime = 0;
+        const timerDisplay = document.getElementById('timer');
+        const timerInput = document.getElementById('timer-input');
+        const startTimer = document.getElementById('start-timer');
+        const resetTimer = document.getElementById('reset-timer');
+
+        function updateTimer() {
+            if (timerTime > 0) {
+                timerTime--;
+                const hours = Math.floor(timerTime / 3600);
+                const minutes = Math.floor((timerTime % 3600) / 60);
+                const seconds = timerTime % 60;
+                timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = 'Time\'s up!';
+                alert('Timer finished!');
+            }
+        }
+
+        startTimer.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerTime = parseInt(timerInput.value) || 0;
+            if (timerTime > 0) {
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+            }
+        });
+
+        resetTimer.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerTime = 0;
+            timerDisplay.textContent = '00:00:00';
+            timerInput.value = '';
+        });
+
+        // Alarm
+        let alarmTime;
+        const alarmDisplay = document.getElementById('alarm');
+        const alarmInput = document.getElementById('alarm-input');
+        const setAlarmButton = document.getElementById('set-alarm');
+
+        function checkAlarm() {
+            const now = new Date();
+            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            if (currentTime === alarmTime) {
+                alarmDisplay.textContent = 'Alarm!';
+                alert('Alarm!');
+                alarmTime = null;
+            }
+        }
+
+        setAlarmButton.addEventListener('click', () => {
+            alarmTime = alarmInput.value;
+            if (alarmTime) {
+                alarmDisplay.textContent = `Alarm set for ${alarmTime}`;
+            } else {
+                alarmDisplay.textContent = 'Not set';
+            }
+        });
+
+        setInterval(checkAlarm, 1000);
+    </script>
+</body>
+</html>
